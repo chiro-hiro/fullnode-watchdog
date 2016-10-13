@@ -1,0 +1,30 @@
+{
+  "name": "fullnode-watchdog",
+  "version": "0.0.1",
+  "description": "Watch the dog",
+  "main": "index.js",
+  "dependencies": {
+    "async": "^2.1.1",
+    "coind-client": "^0.0.1",
+    "web3": "^0.17.0-beta"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tad88dev/fullnode-watchdog.git"
+  },
+  "keywords": [
+    "blockchain",
+    "fullnode",
+    "watchdog"
+  ],
+  "author": "tad88dev",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/tad88dev/fullnode-watchdog/issues"
+  },
+  "homepage": "https://github.com/tad88dev/fullnode-watchdog#readme"
+}
