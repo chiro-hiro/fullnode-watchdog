@@ -28,8 +28,42 @@ function getDaemon(index){
 
 var childProcess = function(){
     var index = getIndex(cluster.worker.id);
-    console.log(getDaemon(index));
-    
+    var daemonInfo = getDaemon(index);
+    if(daemonInfo.code == 'ETH'){
+        var web3 = new Web3(new Web3.providers.HttpProvider(daemonInfo.host));
+        web3.eth.getBlockNumber((e, r) => {
+            if(e){
+                console.log(e, daemonInfo);
+            }else{
+                if(data[index].lastBlock < r){
+                    data[index].lastBlock = r;
+                    data[index].timeOut = 0;
+                }else{
+                    data[index].timeOut += config.recheckTime;
+                    if(data[index].timeout > config.timeout[daemonInfo.code]){
+                        console.log('No block found', daemonInfo);
+                    }
+                }
+            }
+        });
+    }else{
+        var myClient = new coind.Client(daemonInfo);
+        myClient.cmd('getblockcount', (e, r) => {
+            if(e){
+                console.log(e, daemonInfo);
+            }else{
+                if(data[index].lastBlock < r){
+                    data[index].lastBlock = r;
+                    data[index].timeOut = 0;
+                }else{
+                    data[index].timeOut += config.recheckTime;
+                    if(data[index].timeout > config.timeout[daemonInfo.code]){
+                        console.log('No block found', daemonInfo);
+                    }
+                }
+            } 
+        });
+    }
     setTimeout(childProcess, config.recheckTime);
 }
 
@@ -45,6 +79,8 @@ if (cluster.isMaster) {
     });
 
 } else {
+    var index = getIndex(cluster.worker.id);
+    data[index] = 
     childProcess();
 }
 
