@@ -32,7 +32,7 @@ function getDaemon(index) {
 var childProcess = function () {
     var index = getIndex(cluster.worker.id);
     var daemonInfo = getDaemon(index);
-    
+
     var executor = function (e, r, callback) {
         if (e) {
             console.log(e, daemonInfo);
@@ -102,65 +102,3 @@ if (cluster.isMaster) {
     data[index].fail = 0;
     childProcess();
 }
-
-
-/*
-async.eachSeries(geths, function (element, callback) {
-    var web3 = new Web3(new Web3.providers.HttpProvider(element));
-    web3.eth.getBlockNumber((e, r) => { console.log(element, e, r); });
-    callback();
-}, function () {
-    async.eachSeries(config, function (element, callback) {
-        var myClient = new coind.Client(element);
-        myClient.cmd('getblockcount', function (e, r) {
-            console.log("Server:", element.host, "Port:", element.port, "User:", element.user, "--------------");
-            if (!e) {
-                console.log("Block number", r);
-            } else {
-                console.log("Error", e);
-            }
-            callback();
-        });
-    });
-});
-
-
-
-var myClient = new coind.Client(config[0]);
-
-myClient.cmd('getrawtransaction', 'f661368054502b90d1187548dbd6853a32aa6d3ac27d57e2d48fa8fd469d23f9',1 , (e, r) => {
-    console.log(0);
-    console.log(r);
-});
-
-var myClient = new coind.Client(config[3]);
-
-myClient.cmd('getrawtransaction', 'f661368054502b90d1187548dbd6853a32aa6d3ac27d57e2d48fa8fd469d23f9',1 , (e, r) => {
-    console.log(3);
-    console.log(r);
-});
-
-
-var myClient = new coind.Client(config[6]);
-
-myClient.cmd('getrawtransaction', 'b52ff514410ec005a077f68dbf52883a3de1951320176d5f0fa8fa15a2575785',1 , (e, r) => {
-    console.log(r);
-    if (!e) {
-        console.log(r.tx);
-        for(var i = 0; i < r.tx.length; i ++){
-            console.log(r.tx[i]);
-        }
-        var txs = r.tx;
-        async.eachSeries(txs, function (tx, callback) {
-            
-            myClient.cmd('getrawtransaction', tx, 1, (e, r) => {
-                if (!e) {
-                    console.log(r);
-                }else{
-                    console.log(e);
-                }
-                callback();
-            });
-        });
-    }
-});*/
