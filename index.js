@@ -4,6 +4,10 @@ var cluster = require('cluster');
 var Web3 = require('web3');
 var config = require('./config.js');
 const exec = require('child_process').exec;
+const DAEMON_STARTING = 0;
+const DAEMON_STOPPING = 1;
+const DAEMON_STOPPED = 2;
+const DAEMON_STARTED = 3;
 
 var data = [];
 
@@ -32,17 +36,26 @@ function getDaemon(index) {
 var childProcess = function () {
     var index = getIndex(cluster.worker.id);
     var daemonInfo = getDaemon(index);
-
-    var executor = function (e, r, callback) {
+    var executor = (e, r, callback) => {
         if (e) {
             console.log(e, daemonInfo);
             data[index].fail++;
             if (data[index].fail > config.failedTimes) {
                 data[index].fail = -1;
                 console.log(daemonInfo.code, daemonInfo.host, 'failed', data[index].lastBlock, data[index].timeout, data[index].fail);
-                exec(daemonInfo.start, (error, stdout, stderr) => {
-                    setTimeout(childProcess, config.recheckTime);
-                });
+                if (data[index].status === DAEMON_STOPPED) {
+                    data[index].status = DAEMON_STARTING;
+                    console.log(daemonInfo.code, daemonInfo.host, 'starting...');
+                    exec(daemonInfo.start, (error, stdout, stderr) => {
+                        if (error) {
+                            console.log(error, stderr);
+                        } else {
+                            console.log(daemonInfo.code, daemonInfo.host, 'started');
+                            data[index].status = DAEMON_STARTED;
+                            console.log(stdout, stderr);
+                        }
+                    });
+                }
             }
         } else {
             if (data[index].lastBlock < r) {
@@ -53,13 +66,19 @@ var childProcess = function () {
                 data[index].timeout += config.recheckTime;
                 if (data[index].timeout > config.timeout[daemonInfo.code]) {
                     console.log(daemonInfo.code, daemonInfo.host, 'timeout', data[index].lastBlock, data[index].timeout, data[index].fail);
-                    exec(daemonInfo.stop, (error, stdout, stderr) => {
-                        if (error) {
-                            console.log(error);
-                        } else {
-                            console.log(stdout, stderr);
-                        }
-                    });
+                    if (data[index].status === DAEMON_STARTED) {
+                        data[index].status = DAEMON_STOPPING;
+                        console.log(daemonInfo.code, daemonInfo.host, 'stopping...');
+                        exec(daemonInfo.stop, (error, stdout, stderr) => {
+                            if (error) {
+                                console.log(error);
+                            } else {
+                                console.log(daemonInfo.code, daemonInfo.host, 'stopped...');
+                                console.log(stdout, stderr);
+                                data[index].status = DAEMON_STOPPED;
+                            }
+                        });
+                    }
                 }
             }
         }
@@ -100,5 +119,6 @@ if (cluster.isMaster) {
     data[index].lastBlock = 0;
     data[index].timeout = 0;
     data[index].fail = 0;
+    data[index].status = DAEMON_STARTED;
     childProcess();
 }
