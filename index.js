@@ -52,6 +52,8 @@ var childProcess = function () {
                         } else {
                             console.log(daemonInfo.code, daemonInfo.host, 'started');
                             data[index].status = DAEMON_STARTED;
+                            data[index].lastBlock = 0;
+                            data[index].timeout = 0;
                             data[index].fail = - 30;
                             console.log(stdout, stderr);
                         }
